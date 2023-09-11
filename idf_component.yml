@@ -1,0 +1,7 @@
+version: "0.0.1"
+description: esp32s3 math library
+url: https://github.com/rbliznets/esp32-mathlib_s3
+dependencies:
+  idf: ">=5.0"
+targets:
+  - esp32s3
