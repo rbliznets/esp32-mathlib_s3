@@ -1,0 +1,16 @@
+idf_component_register(SRCS "fft_r2s_q15_pie.S" "fft_r2_q15_pie.S" "fft_s3.c" 
+                    "arg_16_q15_pie.S" 
+                    "complex_s3.c" 
+                    "cordic_q15.c"
+                    "cordic_q15.S" 
+                    "fir_16_16_q15_pie.S" 
+                    "complexMult_q15_pie.S" 
+                    "dot_product_q15_pie.S" 
+                    "copy_pie.S" 
+                    "scaleVector_q15_pie.S" 
+                    "normalize_q15_pie.S" 
+                    "mathlib_s3.c" 
+                    "addVectors_q15_pie.S" 
+                    "magnitude_q15_pie.S" 
+                    
+                    INCLUDE_DIRS "include")
