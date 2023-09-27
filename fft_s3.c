@@ -109,7 +109,7 @@ void init_fft(complex_q15* w, uint32_t fftSize)
 complex_q15* getW(complex_q15* w, uint32_t fftSize, uint32_t fftSize2)
 {
 #ifdef CONFIG_CHECK_PARAM
-    assert(fftSize >= fftSize2) == 0);
+    assert(fftSize >= fftSize2);
 #endif
     complex_q15* w_cur = w;
     while(fftSize > fftSize2)
