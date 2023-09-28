@@ -73,7 +73,7 @@ void revbin_permute(complex_q15* data, uint32_t fftSize)
 void init_fft(complex_q15* w, uint32_t fftSize)
 {
     int16_t n = fft_log2(fftSize);
-#ifdef CONFIG_CHECK_PARAM
+#ifdef CONFIG_MLIB_CHECK_PARAM
     assert(((uint32_t)w % 16) == 0);
     assert(n >= 3);
 #endif 
@@ -108,7 +108,7 @@ void init_fft(complex_q15* w, uint32_t fftSize)
 
 complex_q15* getW(complex_q15* w, uint32_t fftSize, uint32_t fftSize2)
 {
-#ifdef CONFIG_CHECK_PARAM
+#ifdef CONFIG_MLIB_CHECK_PARAM
     assert(fftSize >= fftSize2);
 #endif
     complex_q15* w_cur = w;
@@ -123,7 +123,7 @@ complex_q15* getW(complex_q15* w, uint32_t fftSize, uint32_t fftSize2)
 void fft_r2_q15_pie(complex_q15* data, complex_q15* w, uint32_t fftSize);
 inline void fft_radix2(complex_q15* data, complex_q15* w, uint32_t fftSize)
 {
-#ifdef CONFIG_CHECK_PARAM
+#ifdef CONFIG_MLIB_CHECK_PARAM
     assert(((uint32_t)data % 16) == 0);
     assert(fftSize >= 16);
 #endif 
@@ -134,7 +134,7 @@ inline void fft_radix2(complex_q15* data, complex_q15* w, uint32_t fftSize)
 void fft_r2s_q15_pie(complex_q15* data, complex_q15* w, uint32_t fftSize);
 inline void fft_radix2_scale(complex_q15* data, complex_q15* w, uint32_t fftSize)
 {
-#ifdef CONFIG_CHECK_PARAM
+#ifdef CONFIG_MLIB_CHECK_PARAM
     assert(((uint32_t)data % 16) == 0);
     assert(fftSize >= 16);
 #endif 

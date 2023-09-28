@@ -1,3 +1,4 @@
+    .section .iram1,"ax"
     .text
     .type   magnitude_q15_pie,@function
     .align  4

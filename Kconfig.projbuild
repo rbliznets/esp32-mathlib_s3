@@ -1,6 +1,6 @@
 menu "mathlib_s3"
 
-    config CHECK_PARAM
+    config MLIB_CHECK_PARAM
         bool "Enable check function params."
         default n
         help

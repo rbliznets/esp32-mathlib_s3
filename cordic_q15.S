@@ -1,3 +1,4 @@
+    .section .iram1,"ax"
     .text
     .align  4
 	.literal_position
