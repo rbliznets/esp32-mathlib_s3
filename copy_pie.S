@@ -1,3 +1,4 @@
+    .section .iram1,"ax"
     .text
     .type   copy_pie,@function
     .align  4

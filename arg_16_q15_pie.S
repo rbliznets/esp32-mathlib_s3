@@ -1,3 +1,4 @@
+    .section .iram1,"ax"
     .type   arg_16_q15_pie,@function
     .align  4
     .global arg_16_q15_pie
