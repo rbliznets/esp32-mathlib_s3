@@ -1,8 +1,8 @@
 /*!
 	\file
 	\brief Оптимизированные функции DSP.
-	\authors Близнец Р.А.
-	\version 0.3.0.0
+	\authors Близнец Р.А. (r.bliznets@gmail.com)
+	\version 1.0.0.0
 	\date 11.11.2022
 */
 
