@@ -22,12 +22,11 @@ inline q15 atan2_q15(q15 y, q15 x)
 void arg_16_q15_pie(complex_q15 *in, q15 *out, uint32_t size, const q15 *tan);
 inline void arg_16_q15(complex_q15 *in, q15 *out, uint32_t size)
 {
-#ifdef CONFIG_MLIB_CHECK_PARAM
     assert(((uint32_t)in % 16) == 0);
     assert(((uint32_t)out % 16) == 0);
     assert((size % 8) == 0);
     assert(size > 0);
-#endif
+
     arg_16_q15_pie(in, out, size, tan_array);
 }
 

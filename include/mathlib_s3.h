@@ -23,7 +23,7 @@ typedef int16_t q15; ///< fixed point S.15
 #define toQ15Angle(f) ((q15)((f/(2*M_PI))*INT16_MAX))
 #define toFloatAngle(q) ((q/float(INT16_MAX))*2*M_PI)
 
-#define to16SIZE(size) ((((size)+15)/16)*17)
+#define to16SIZE(size) ((((size)+15)/16)*16)
 #define to8SIZE(size) ((((size)+7)/8)*8)
 #define to4SIZE(size) ((((size)+3)/4)*4)
 
