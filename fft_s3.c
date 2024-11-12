@@ -42,7 +42,7 @@ inline uint32_t revbin_update(uint32_t r, uint32_t n)
     return r;
 }
 
-IRAM_ATTR void revbin_permute(complex_q15 *data, uint32_t fftSize)
+void IRAM_ATTR revbin_permute(complex_q15 *data, uint32_t fftSize)
 {
     uint32_t *dt = (uint32_t *)data;
     uint32_t nh = fftSize >> 1;
