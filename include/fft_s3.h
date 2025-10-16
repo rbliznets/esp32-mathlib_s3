@@ -1,9 +1,9 @@
 /*!
     \file
-    \brief Оптимизированные функции для FFT.
-    \authors Близнец Р.А. (r.bliznets@gmail.com)
+    \brief Optimized functions for FFT.
+    \authors Bliznets R.A. (r.bliznets@gmail.com)
     \version 1.0.0.0
-    \date 13.03.2023
+    \date 03/13/2023
 */
 
 #pragma once
@@ -20,23 +20,23 @@ extern "C"
         \return log2
     */
     int16_t fft_log2(uint32_t fftSize);
-    /// Init FFT twidle.
+    /// Initialize FFT twiddle factors.
     /*!
-        Initialization FFT twidle.
-        \param[out] w twiddle array (fftSize)
+        Initializes the FFT twiddle factor array.
+        \param[out] w twiddle array (fftSize elements)
         \param[in] fftSize maximum FFT size.
     */
     void init_fft(complex_q15 *w, uint32_t fftSize);
-    /// get FFT twidle array.
+    /// Get FFT twiddle array for a specific size.
     /*!
-        \param[in] w twiddle array (fftSize2)
-        \param[in] fftSize FFT size.
-        \param[in] fftSize2 maximum FFT size.
-        \return begin FFT twidle array for fftSize.
+        \param[in] w twiddle array (fftSize2 elements)
+        \param[in] fftSize desired FFT size.
+        \param[in] fftSize2 maximum FFT size (size of the w array).
+        \return pointer to the start of the FFT twiddle array for fftSize.
     */
     complex_q15 *getW(complex_q15 *w, uint32_t fftSize, uint32_t fftSize2);
 
-    /// permute data after FFT.
+    /// Permute data after FFT (bit-reversal).
     /*!
         \param[in|out] data FFT output
         \param[in] fftSize FFT size.
@@ -45,17 +45,17 @@ extern "C"
 
     /// FFT.
     /*!
-        Stage scailing: 1/2
+        Stage scaling: 1/2
         \param[in|out] data
-        \param[in] w twiddle array (fftSize)
+        \param[in] w twiddle array (fftSize elements)
         \param[in] fftSize FFT size.
     */
     void fft_radix2(complex_q15 *data, complex_q15 *w, uint32_t fftSize);
     /// FFT.
     /*!
-        Stage scailing: auto
+        Stage scaling: automatic
         \param[in|out] data
-        \param[in] w twiddle array (fftSize)
+        \param[in] w twiddle array (fftSize elements)
         \param[in] fftSize FFT size.
     */
     void fft_radix2_scale(complex_q15 *data, complex_q15 *w, uint32_t fftSize);

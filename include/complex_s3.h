@@ -1,9 +1,9 @@
 /*!
     \file
-    \brief Оптимизированные функции для комплексных чисел.
-    \authors Близнец Р.А. (r.bliznets@gmail.com)
+    \brief Optimized functions for complex numbers.
+    \authors Bliznets R.A. (r.bliznets@gmail.com)
     \version 1.0.0.0
-    \date 14.02.2023
+    \date 02/14/2023
 */
 
 #pragma once
@@ -17,12 +17,12 @@ extern "C"
     typedef __attribute__((aligned(4))) struct complex_q15
     {
         q15 re; ///< real
-        q15 im; ///< imagine
+        q15 im; ///< imaginary
     } complex_q15;
 
     /// argument.
     /*!
-        \param[in] value .
+        \param[in] value The complex number.
         \return argument in radians. (Pi = 16383)
     */
     inline q15 arg(complex_q15 value)
@@ -32,8 +32,8 @@ extern "C"
 
     /// argument.
     /*!
-        \param[in] complex vector (16 bytes aligned)..
-        \param[out] out magnitude (16 bytes aligned).
+        \param[in] in complex vector (16 bytes aligned).
+        \param[out] out argument in radians (16 bytes aligned).
         \param[in] size vector size (multiple of 8).
     */
     void arg_16_q15(complex_q15 *in, q15 *out, uint32_t size);
@@ -49,9 +49,9 @@ extern "C"
 
     /// Complex multiplication.
     /*!
-        out=(in.re^2 + in.im^2)/2
+        out = x * y
         \param[in] x complex value.
-        \param[out] y complex value.
+        \param[in] y complex value.
         \return x*y.
     */
     complex_q15 cmul_q15(complex_q15 x, complex_q15 y);
@@ -59,7 +59,7 @@ extern "C"
     /*!
         out=in * k
         \param[in] in vector (16 bytes aligned).
-        \param[in] k pointer for scalar (2 bytes aligned).
+        \param[in] k pointer to scalar (2 bytes aligned).
         \param[out] out output vector (16 bytes aligned).
     */
     void cmul10_q15(complex_q15 *in, complex_q15 *k, complex_q15 *out);
