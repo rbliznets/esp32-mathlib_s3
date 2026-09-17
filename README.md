@@ -127,6 +127,11 @@ Library contains defines optimized functions for performing operations on fixed-
     *   Performs an arithmetic right shift (`shift` bits) on each element of a 32-bit input vector `in` and stores the upper 15 bits of the result in the 16-bit output vector `out`.
     *   The input `in` and output `out` vectors must be 16-byte aligned. The `shift` value must be between 1 and 31. The `size` must be a multiple of 8 and >= 8.
 
+*   **`maxAbsVector_16(uint32_t *in, uint32_t size)`**:
+    *   Finds the maximum absolute value of `(int16_t)(in[i] >> 16)` across all elements of the 32-bit input vector `in` (i.e. the high halves of the words, as produced by the AK2401 IQ format).
+    *   The input `in` vector must be 16-byte aligned. The `size` (in words) must be a multiple of 8 and >= 8.
+    *   Returns the maximum absolute value (0..32768).
+
 *   **`scaleVector(q15 *in, q15 *k, q15 *out, uint32_t size)`**:
     *   Multiplies each element of the input vector `in` by a scalar value pointed to by `k`, storing the result in `out`.
     *   The scalar pointer `k` must be 2-byte aligned, and the output `out` must be 16-byte aligned. The `size` must be a multiple of 8 and >= 16.

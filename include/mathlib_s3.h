@@ -64,6 +64,14 @@ extern "C"
     */
     void shrinkVector_16(uint32_t *in, uint8_t shift, q15 *out, uint32_t size);
 
+    /// Maximum absolute value of 32bit vector shifted to 16bit.
+    /*!
+        \param[in] in 32bit vector (16 bytes aligned).
+        \param[in] size vector size in words (multiple of 8, >= 8).
+        \return max abs of (int16_t)(in[i] >> 16).
+    */
+    uint32_t maxAbsVector_16(uint32_t *in, uint32_t size);
+
     /// Multiply vector by scalar.
     /*!
         out=in * k

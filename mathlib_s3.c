@@ -97,6 +97,21 @@ inline void shrinkVector_16(uint32_t *in, uint8_t shift, q15 *out, uint32_t size
     shrinkVector_16_pie(in, shift, out, size);
 }
 
+// Internal implementation function for finding maximum absolute value of shifted to 16bit vector (PIE)
+uint32_t maxAbsVector_16_pie(uint32_t *in, uint32_t size);
+// Wrapper function for finding maximum absolute value with assertions
+inline uint32_t maxAbsVector_16(uint32_t *in, uint32_t size)
+{
+    // Ensure input vector is 16-byte aligned
+    assert(((uint32_t)in % 16) == 0);
+    // Ensure size is a multiple of 8
+    assert((size % 8) == 0);
+    // Ensure size is greater than 0
+    assert(size > 0);
+
+    return maxAbsVector_16_pie(in, size);
+}
+
 // Internal implementation function for dot product (16-byte aligned vectors) (PIE)
 q15 dot_product_q15_16_16_pie(q15 *in1, q15 *in2, uint32_t size);
 // Wrapper function for dot product (16-byte aligned vectors) with assertions

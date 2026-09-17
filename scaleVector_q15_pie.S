@@ -89,3 +89,65 @@ shrinkVector_16_pie:
         ee.vst.128.ip   q0, a4, 16  // Store the reorganized and shifted 16-bit values from q0 to output, increment a4 by 16
     .loop_end_shrinkVector_16_pie:
     retw.n  // Return from function (windowed return)
+/////////////////////////////////////////////////////////////////////////////////////////////////
+//  The function implements the following C code:
+//uint32_t maxAbsVector_16_pie(uint32_t *in, uint32_t size)
+//{
+//    int16_t mn = 0, mx = 0;
+//    for (uint32_t i = 0; i < size; i++)
+//    {
+//        int16_t v = (int16_t)(in[i] >> 16); // high half of the word (arithmetic shift)
+//        if (v < mn) mn = v;
+//        if (v > mx) mx = v;
+//    }
+//    return (uint32_t)((mx >= -mn) ? mx : -mn); // max(|mn|, mx), |mn| can be 32768
+//}
+    .type   maxAbsVector_16_pie,@function
+    .align  4
+    .global maxAbsVector_16_pie
+maxAbsVector_16_pie:
+// in   - a2  (pointer to input array of uint32_t, 16-byte aligned)
+// size - a3  (number of elements to process, multiple of 8)
+    entry	a1, 16  // Function entry, allocate 16 bytes on the stack for ABI
+
+    srli 	a3, a3, 3 // Divide size by 8 (as the loop processes 8 words per iteration)
+    ssai    16         // Set SAR register to 16 (arithmetic shift of 32-bit lanes)
+    ee.zero.q       q1 // Initialize minimum accumulator q1 to zero
+    ee.zero.q       q2 // Initialize maximum accumulator q2 to zero
+
+    loopnez a3, .loop_end_maxAbsVector_16_pie  // Loop size/8 times
+        ee.vld.128.ip   q0,a2,16  // Load 128 bits (4 uint32_t) from input into q0, increment a2 by 16
+        ee.vld.128.ip   q3,a2,16  // Load next 128 bits (4 uint32_t) from input into q3, increment a2 by 16
+        ee.vsr.32       q0,q0     // Shift each 32-bit lane right by 16 (arithmetic): even half-lanes = (int16_t)(word>>16), odd half-lanes = 0/-1 sign extension
+        ee.vsr.32       q3,q3
+        ee.vmin.s16     q1,q0,q1  // Update minimums: sign-extension half-lanes (0/-1) can only lower the minimum to -1, the true minimum is never lost
+        ee.vmax.s16     q2,q0,q2  // Update maximums: sign-extension half-lanes (0/-1) never raise the maximum above the true one
+        ee.vmin.s16     q1,q3,q1
+        ee.vmax.s16     q2,q3,q2
+    .loop_end_maxAbsVector_16_pie:
+
+    // Find the single minimum value across all elements in q1 (lane 0 stays pure of the sign-extension leftovers)
+    ee.vunzip.16    q1, q4
+    ee.vmin.s16     q1, q4, q1 //minimum x4 (reduce within pairs)
+    ee.vunzip.16    q1, q4
+    ee.vmin.s16     q1, q4, q1 //minimum x2 (reduce further)
+    ee.vunzip.16    q1, q4
+    ee.vmin.s16     q1, q4, q1 //minimum x1 (reduce to single value in q1)
+
+    // Find the single maximum value across all elements in q2
+    ee.vunzip.16    q2, q4
+    ee.vmax.s16     q2, q4, q2 //maximum x4 (reduce within pairs)
+    ee.vunzip.16    q2, q4
+    ee.vmax.s16     q2, q4, q2 //maximum x2 (reduce further)
+    ee.vunzip.16    q2, q4
+    ee.vmax.s16     q2, q4, q2 //maximum x1 (reduce to single value in q2)
+
+    ee.movi.32.a	q1, a6, 0 // Move the low 32 bits of q1 (final minimum in bits 0..15) to register a6
+    slli 	        a6, a6, 16 // Keep only the minimum half-lane (discard the neighbor lane)
+    srai 	        a6, a6, 16 // Sign-extend it back (slli+abs alone would break on -32768: abs of INT32_MIN stays negative)
+    abs 	        a6, a6      // a6 = |minimum| (0..32768)
+    ee.movi.32.a	q2, a7, 0 // Move the low 32 bits of q2 (final maximum in bits 0..15) to register a7
+    slli 	        a7, a7, 16
+    srai 	        a7, a7, 16 // a7 = maximum (>= 0)
+    max             a2, a6, a7 // a2 = max(|minimum|, maximum)
+    retw.n  // Return from function (windowed return)
