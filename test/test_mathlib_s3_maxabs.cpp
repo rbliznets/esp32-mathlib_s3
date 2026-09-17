@@ -2,7 +2,7 @@
  * @file test_mathlib_s3_maxabs.cpp
  * @author Roman Bliznets (r.bliznets@gmail.com)
  * @brief Unity module tests for maxAbsVector_16 (IQ 24->16 shift calculation)
- * @version 0.0.0.1
+ * @version 0.0.0.2
  * @date 17.09.2026
  *
  * @copyright Copyright (c) 2026
@@ -29,7 +29,8 @@ static uint32_t packet[WORDS];
 /**
  * @brief Reference scalar implementation of the shift calculation (former CI2STask code)
  *
- * @param data raw IQ words in AK2401 format (bit 31 - sign, bits 30..7 - 24bit sample)
+ * @param data raw IQ words in AK2401 format (bits 30..7 - 24bit sample with the sign in bit 30,
+ *             bit 31 - tail of the previous I2S slot, bits 6..0 - status)
  * @return shift value
  */
 static uint8_t ref_shift(const uint32_t* data)
@@ -62,7 +63,7 @@ static uint8_t simd_shift(const uint32_t* data)
 {
     uint8_t shift = 7;
     uint32_t mx = maxAbsVector_16((uint32_t*)data, WORDS);
-    while (mx >= 32)
+    while (mx >= 64)
     {
         mx >>= 1;
         shift++;
@@ -75,14 +76,14 @@ static uint8_t simd_shift(const uint32_t* data)
  *
  * @param data input words
  * @param size number of words
- * @return max abs of (int16_t)(data[i] >> 16)
+ * @return max abs of (int16_t)(data[i] >> 15)
  */
 static uint32_t ref_maxAbs(const uint32_t* data, uint32_t size)
 {
     int16_t mn = 0, mx = 0;
     for (uint32_t i = 0; i < size; i++)
     {
-        int16_t v = (int16_t)(((int32_t)data[i]) >> 16); ///< High half of the word (arithmetic shift).
+        int16_t v = (int16_t)(((int32_t)data[i]) >> 15); ///< Bits 30..15 of the word (bit 31 is ignored).
         if (v < mn) mn = v;
         if (v > mx) mx = v;
     }
@@ -97,14 +98,14 @@ TEST_CASE("maxAbsVector_16", "[math][mathlib_s3]")
     TRACE("Packet size (words)", WORDS, false);
 
     /// Direct check of H against the C equivalent on all boundary patterns.
-    /// Patterns: zeros, positive/negative full-scale sample, asymmetric extremes,
-    /// -32768 in the high half (min reduction must survive abs), random noise.
+    /// Patterns: zeros, positive/negative full-scale sample with both values of bit 31,
+    /// -32768/+32767 in bits 30..15 (min reduction must survive abs), -1 and 0 samples, noise.
     const uint32_t patterns[][4] = {
         {0, 0, 0, 0},                                        // silence
-        {0x7FFFFF80u, 0x7FFFFF80u, 0x7FFFFF80u, 0x7FFFFF80u},// positive full-scale sample
-        {0x80000080u, 0x80000080u, 0x80000080u, 0x80000080u},// negative full-scale sample
-        {0xFF7FFF80u, 0x00800080u, 0x7F000080u, 0x81000080u},// -32768/+32768 in high halves
-        {0x00008000u, 0xFFFF8000u, 0x12345678u, 0xFEDCBA98u},// high half exactly 0x8000 (=> -32768)
+        {0x3FFFFF80u, 0xBFFFFF80u, 0x3FFFFF80u, 0xBFFFFF80u},// positive full-scale sample, bit 31 = 0/1
+        {0x40000080u, 0xC0000080u, 0x40000080u, 0xC0000080u},// negative full-scale sample, bit 31 = 0/1
+        {0x40007F80u, 0x3FFF8000u, 0xC0000000u, 0xBFFF8000u},// -32768/+32767 in bits 30..15
+        {0x7FFFFF80u, 0x80000000u, 0x12345678u, 0xFEDCBA98u},// -1 and 0 samples with bit 31 set/clear, noise
     };
     for (auto& p : patterns)
     {
@@ -120,8 +121,9 @@ TEST_CASE("maxAbsVector_16", "[math][mathlib_s3]")
         }
     }
 
-    /// Random packets in AK2401 format: w = (uint32_t)((int32_t)s << 7) | (status & 0x7f),
-    /// s is a 24bit sample covering all amplitudes (including full-scale ±2^23).
+    /// Random packets in AK2401 format: w = ((uint32_t)((int32_t)s << 7) & 0x7fffffff) | tail | (status & 0x7f),
+    /// s is a 24bit sample covering all amplitudes (including full-scale ±2^23), tail is a random bit 31
+    /// (the previous I2S slot): taking bit 31 as the sign would push the shift to the maximum.
     /// Checked: simd shift is never less than reference and at most +1 (safe side margin),
     /// and the output word after >> shift fits into int16_t without wraparound.
     for (int t = 0; t < 2000; t++)
@@ -130,7 +132,7 @@ TEST_CASE("maxAbsVector_16", "[math][mathlib_s3]")
         for (int i = 0; i < DATA_WORDS; i++)
         {
             int32_t s = (int32_t)(((esp_random() >> 8) % (2 * amp + 1)) - amp); ///< Uniform in [-amp, amp].
-            packet[i] = (uint32_t)((s << 7)) | (esp_random() & 0x7f);
+            packet[i] = ((uint32_t)(s << 7) & 0x7fffffffu) | (esp_random() & 0x80000000u) | (esp_random() & 0x7f);
         }
         for (int i = DATA_WORDS; i < WORDS; i++)
             packet[i] = 0; ///< Padding beyond 20 words must be zeroed (as in CI2STask MSG_START_IQ).

@@ -128,7 +128,7 @@ Library contains defines optimized functions for performing operations on fixed-
     *   The input `in` and output `out` vectors must be 16-byte aligned. The `shift` value must be between 1 and 31. The `size` must be a multiple of 8 and >= 8.
 
 *   **`maxAbsVector_16(uint32_t *in, uint32_t size)`**:
-    *   Finds the maximum absolute value of `(int16_t)(in[i] >> 16)` across all elements of the 32-bit input vector `in` (i.e. the high halves of the words, as produced by the AK2401 IQ format).
+    *   Finds the maximum absolute value of `(int16_t)(in[i] >> 15)` across all elements of the 32-bit input vector `in`, i.e. bits 30..15 of the words. Bit 31 is ignored: in the AK2401 IQ format the 24-bit sample occupies bits 30..7 and bit 31 is the tail of the previous I2S slot.
     *   The input `in` vector must be 16-byte aligned. The `size` (in words) must be a multiple of 8 and >= 8.
     *   Returns the maximum absolute value (0..32768).
 

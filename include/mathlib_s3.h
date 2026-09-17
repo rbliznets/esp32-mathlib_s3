@@ -66,9 +66,11 @@ extern "C"
 
     /// Maximum absolute value of 32bit vector shifted to 16bit.
     /*!
+        Bits 30..15 of each word are taken, bit 31 is ignored (AK2401 IQ words: the 24bit sample
+        occupies bits 30..7, bit 31 is the tail of the previous I2S slot).
         \param[in] in 32bit vector (16 bytes aligned).
         \param[in] size vector size in words (multiple of 8, >= 8).
-        \return max abs of (int16_t)(in[i] >> 16).
+        \return max abs of (int16_t)(in[i] >> 15).
     */
     uint32_t maxAbsVector_16(uint32_t *in, uint32_t size);
 
