@@ -46,9 +46,22 @@ inline uint32_t revbin_update(uint32_t r, uint32_t n)
     return r;
 }
 
+#if defined(__XTENSA__)
+// Internal implementation of bit-reversal permutation for sizes 16..1024 (PIE, EE.BITREV)
+void revbin_permute_pie(complex_q15 *data, uint32_t fftSize, uint32_t width);
+#endif
+
 // Performs bit-reversal permutation on the FFT data array in-place.
 void IRAM_ATTR revbin_permute(complex_q15 *data, uint32_t fftSize)
 {
+#if defined(__XTENSA__)
+    // EE.BITREV covers 4..10 bits (sizes 16..1024)
+    if ((fftSize >= 16) && (fftSize <= 1024))
+    {
+        revbin_permute_pie(data, fftSize, ((uint32_t)fft_log2(fftSize)) & 7);
+        return;
+    }
+#endif
     uint32_t *dt = (uint32_t *)data; // Treat complex_q15 pairs as 32-bit words for faster swapping
     uint32_t nh = fftSize >> 1;      // Half the FFT size
     uint32_t r = 0;                  // Bit-reversed index

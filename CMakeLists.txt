@@ -1,6 +1,7 @@
 idf_component_register(SRCS "fft_r2s_q15_pie.S" 
                     "fft_r2_q15_pie.S" 
                     "fft_s3.c" 
+                    "revbin_permute_pie.S" 
                     "arg_16_q15_pie.S" 
                     "complex_s3.c" 
                     "cordic_q15.c"

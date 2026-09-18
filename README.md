@@ -39,6 +39,7 @@ Library contains optimized functions for performing Fast Fourier Transforms (FFT
 
 *   **`revbin_permute(complex_q15 *data, uint32_t fftSize)`**:
     *   Performs an in-place bit-reversal permutation on the `data` array.
+    *   Sizes 16..1024 use the PIE instruction `EE.BITREV` (`revbin_permute_pie.S`), larger sizes the C loop.
     *   This step is typically required after an FFT algorithm to reorder the output into the correct sequence.
 
 *   **`fft_radix2(complex_q15 *data, complex_q15 *w, uint32_t fftSize)`**:
@@ -157,6 +158,11 @@ Library contains defines optimized functions for performing operations on fixed-
     *   Calculates the dot product (sum of element-wise products) of two vectors `in1` and `in2`.
     *   Both input vectors must be 16-byte aligned. The `size` must be a multiple of 8 and >= 8.
     *   Returns the resulting scalar value.
+
+*   **`dot_product_16_16_32(q15 *in1, q15 *in2, uint32_t size, uint32_t shift)`**:
+    *   Calculates the dot product of two vectors `in1` and `in2` without the Q15 scaling: the exact sum of products (40-bit accumulator) is shifted right by `shift` and saturated to 32 bits.
+    *   Both input vectors must be 16-byte aligned, with 16 readable bytes after the end (the loop preloads the next block). The `size` must be a multiple of 8 and >= 8, `shift` < 40.
+    *   Returns the resulting 32-bit value.
 
 *   **`dot_product_1_16(q15 *in1, q15 *in2, uint32_t size)`**:
     *   Calculates the dot product of two vectors `in1` and `in2`.

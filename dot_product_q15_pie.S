@@ -66,3 +66,28 @@ dot_product_q15_1_16_pie:
     SRAI    a2, a2, 15          // Arithmetic right shift by 15 (divide by 2^15 to normalize from internal 30-bit format to Q15)
 
     retw.n  // Return from function (windowed return)
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+    .type   dot_product_q15_16_16_s32_pie,@function
+    .align  4
+    .global dot_product_q15_16_16_s32_pie
+dot_product_q15_16_16_s32_pie: 
+// in1   - a2  (pointer to first input vector, 16-byte aligned)
+// in2   - a3  (pointer to second input vector, 16-byte aligned)
+// size  - a4  (number of elements to multiply and sum, multiple of 8)
+// shift - a5  (right shift of the 40-bit accumulator before saturation to 32 bits)
+// Like dot_product_q15_16_16_pie, the loop preloads 16 bytes past the end of both vectors.
+    entry	a1, 16  // Function entry, allocate 16 bytes on the stack for ABI
+
+    srli 	a4, a4, 3           // Divide size by 8 (as the loop processes 8 elements per iteration)
+    ee.zero.accx                // Clear the accumulator register (accx = 0)
+    ee.vld.128.ip   q0, a2, 16  // Load 128 bits (8 int16_t) from in1[0..7] into q0, increment a2 by 16
+    ee.vld.128.ip   q1, a3, 16  // Load 128 bits (8 int16_t) from in2[0..7] into q1, increment a3 by 16
+
+    loopnez a4, .loop_end_dot_product_q15_16_16_s32_pie  // Loop 'size/8' times, exit if a4 becomes zero
+        ee.vmulas.s16.accx.ld.ip    q0, a2, 16, q0, q1  // Multiply-add 8 signed 16-bit pairs into the 40-bit accx, load next 128 bits from in1
+        ee.vld.128.ip               q1, a3, 16          // Load next 128 bits (8 int16_t) from in2
+    .loop_end_dot_product_q15_16_16_s32_pie:
+
+    EE.SRS.ACCX a2, a5, 0  // Shift accx right by 'shift', saturate to 32 bits and return it
+
+    retw.n  // Return from function (windowed return)

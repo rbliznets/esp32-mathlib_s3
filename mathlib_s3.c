@@ -129,6 +129,25 @@ inline q15 dot_product_16_16(q15 *in1, q15 *in2, uint32_t size)
     return dot_product_q15_16_16_pie(in1, in2, size);
 }
 
+// Internal implementation function for dot product with a 32-bit result (16-byte aligned vectors) (PIE)
+int32_t dot_product_q15_16_16_s32_pie(q15 *in1, q15 *in2, uint32_t size, uint32_t shift);
+// Wrapper function for dot product with a 32-bit result with assertions
+inline int32_t dot_product_16_16_32(q15 *in1, q15 *in2, uint32_t size, uint32_t shift)
+{
+    // Ensure first input vector is 16-byte aligned
+    assert(((uint32_t)in1 % 16) == 0);
+    // Ensure second input vector is 16-byte aligned
+    assert(((uint32_t)in2 % 16) == 0);
+    // Ensure size is a multiple of 8
+    assert((size % 8) == 0);
+    // Ensure size is greater than 0
+    assert(size > 0);
+    // The 40-bit accumulator holds at most 40 bits
+    assert(shift < 40);
+
+    return dot_product_q15_16_16_s32_pie(in1, in2, size, shift);
+}
+
 // Internal implementation function for dot product (first vector unaligned) (PIE)
 q15 dot_product_q15_1_16_pie(q15 *in1, q15 *in2, uint32_t size);
 // Wrapper function for dot product (first vector unaligned) with assertions

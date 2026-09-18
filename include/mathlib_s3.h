@@ -92,6 +92,17 @@ extern "C"
         \return result
     */
     q15 dot_product_16_16(q15 *in1, q15 *in2, uint32_t size);
+    /// Dot product of vectors q15 with a 32-bit result.
+    /*!
+        The exact sum of products is accumulated in the 40-bit accumulator, shifted right by shift
+        and saturated to 32 bits.
+        \param[in] in1 vector (16 bytes aligned, 16 readable bytes after the end).
+        \param[in] in2 vector (16 bytes aligned, 16 readable bytes after the end).
+        \param[in] size vector size (multiple of 8, >= 8).
+        \param[in] shift right shift of the sum (< 40).
+        \return (sum in1[i] * in2[i]) >> shift, saturated to int32
+    */
+    int32_t dot_product_16_16_32(q15 *in1, q15 *in2, uint32_t size, uint32_t shift);
     /// Dot product of vectors q15.
     /*!
         \param[in] in1 vector.
