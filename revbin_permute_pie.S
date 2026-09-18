@@ -22,18 +22,26 @@ revbin_permute_pie:
     entry   a1, 16  // Function entry, allocate 16 bytes on the stack for ABI
 
     wur.fft_bit_width a4    // Number of reversed bits (modulo 8)
+    ssai    2               // SAR = 2: EE.VSL.32 turns an index into a byte offset
+    ee.movi.32.q    q6, a2, 0
+    ee.movi.32.q    q6, a2, 1
+    ee.movi.32.q    q6, a2, 2
+    ee.movi.32.q    q6, a2, 3   // q6 = data address in all four 32-bit lanes
     movi.n  a5, 0           // Index counter for EE.BITREV (incremented by 8 by the instruction)
     srli    a6, a3, 3       // Number of groups of 8 indices
     mov.n   a7, a2          // a7 = &data[x] for the first index of the group
 
     loopnez a6, .loop_end_revbin_permute_pie
-        ee.bitrev       q0, a5          // q0 = partners of x..x+7, a5 += 8
+        ee.bitrev       q0, a5          // q0 = partners of x..x+7 (16 bit), a5 += 8
+        ee.zero.q       q1
+        ee.vzip.16      q0, q1          // zero-extend: q0 = partners 0..3, q1 = partners 4..7 (32 bit)
+        ee.vsl.32       q0, q0          // byte offsets
+        ee.vsl.32       q1, q1
+        ee.vadds.s32    q0, q0, q6      // addresses of the partners
+        ee.vadds.s32    q1, q1, q6
 
-        ee.movi.32.a    q0, a8, 0       // lanes 0, 1
-        extui   a9, a8, 0, 16
-        srli    a8, a8, 16
-        addx4   a9, a9, a2              // &data[partner of x]
-        addx4   a8, a8, a2              // &data[partner of x+1]
+        ee.movi.32.a    q0, a9, 0       // &data[partner] of lane
+        ee.movi.32.a    q0, a8, 1
         l32i    a10, a7, 0
         l32i    a11, a9, 0
         l32i    a12, a7, 4
@@ -43,11 +51,8 @@ revbin_permute_pie:
         s32i    a13, a7, 4
         s32i    a12, a8, 0
 
-        ee.movi.32.a    q0, a8, 1       // lanes 2, 3
-        extui   a9, a8, 0, 16
-        srli    a8, a8, 16
-        addx4   a9, a9, a2
-        addx4   a8, a8, a2
+        ee.movi.32.a    q0, a9, 2       // &data[partner] of lane
+        ee.movi.32.a    q0, a8, 3
         l32i    a10, a7, 8
         l32i    a11, a9, 0
         l32i    a12, a7, 12
@@ -57,11 +62,8 @@ revbin_permute_pie:
         s32i    a13, a7, 12
         s32i    a12, a8, 0
 
-        ee.movi.32.a    q0, a8, 2       // lanes 4, 5
-        extui   a9, a8, 0, 16
-        srli    a8, a8, 16
-        addx4   a9, a9, a2
-        addx4   a8, a8, a2
+        ee.movi.32.a    q1, a9, 0       // &data[partner] of lane
+        ee.movi.32.a    q1, a8, 1
         l32i    a10, a7, 16
         l32i    a11, a9, 0
         l32i    a12, a7, 20
@@ -71,11 +73,8 @@ revbin_permute_pie:
         s32i    a13, a7, 20
         s32i    a12, a8, 0
 
-        ee.movi.32.a    q0, a8, 3       // lanes 6, 7
-        extui   a9, a8, 0, 16
-        srli    a8, a8, 16
-        addx4   a9, a9, a2
-        addx4   a8, a8, a2
+        ee.movi.32.a    q1, a9, 2       // &data[partner] of lane
+        ee.movi.32.a    q1, a8, 3
         l32i    a10, a7, 24
         l32i    a11, a9, 0
         l32i    a12, a7, 28

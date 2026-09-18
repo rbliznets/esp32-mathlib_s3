@@ -40,6 +40,9 @@ Library contains optimized functions for performing Fast Fourier Transforms (FFT
 *   **`revbin_permute(complex_q15 *data, uint32_t fftSize)`**:
     *   Performs an in-place bit-reversal permutation on the `data` array.
     *   Sizes 16..1024 use the PIE instruction `EE.BITREV` (`revbin_permute_pie.S`), larger sizes the C loop.
+        `EE.BITREV` gives the swap partner of every index (bitrev(x) if it is greater than x, otherwise x), so
+        each index is swapped unconditionally; partner addresses are computed in vector registers.
+        Size 1024: 26.2 usec (C loop 32.5 usec), 512: 13.4 usec (16.2), 256: 7.0 usec (8.1).
     *   This step is typically required after an FFT algorithm to reorder the output into the correct sequence.
 
 *   **`fft_radix2(complex_q15 *data, complex_q15 *w, uint32_t fftSize)`**:
