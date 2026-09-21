@@ -1,5 +1,4 @@
     .section .iram1,"ax"  // Place this function in the IRAM1 section (for faster access)
-    .text
     .align  4
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 // Bit-reversal permutation of complex_q15 data in place for FFT sizes 16..1024.
