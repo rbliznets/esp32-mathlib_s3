@@ -120,6 +120,15 @@ extern "C"
         \param[in] size vector size.
     */
     void fir_1_16(q15 *in, q15 *k, uint32_t ksize, q15 *out, uint32_t size);
+    /// Sums of sample pairs on 12 adjacent shifts (sparse correlation with +-1 taps).
+    /*!
+        out[k] = sum over j of (in[pos[2j+1] + k] - in[pos[2j] + k]), k = 0..11, exact (32 bit).
+        \param[in] in samples (any alignment); in[p + 0..23] must be readable for every position p.
+        \param[in] pos positions of the samples: minus, plus, minus, plus, ...
+        \param[in] pairs number of pairs.
+        \param[out] out 12 sums (16 bytes aligned).
+    */
+    void sum_pairs_12_s16(const int16_t *in, const uint16_t *pos, uint32_t pairs, int32_t *out);
 
     /// Addition of two vectors with saturation.
     /*!

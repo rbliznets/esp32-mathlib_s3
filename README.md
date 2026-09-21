@@ -177,6 +177,11 @@ Library contains defines optimized functions for performing operations on fixed-
     *   The coefficients `k` must be 16-byte aligned. The number of coefficients `ksize` must be a multiple of 8 and >= 8.
     *   Outputs `size` samples to the `out` vector.
 
+*   **`sum_pairs_12_s16(const int16_t *in, const uint16_t *pos, uint32_t pairs, int32_t *out)`**:
+    *   Sums of sample pairs on 12 adjacent shifts: `out[k] = sum_j (in[pos[2j+1] + k] - in[pos[2j] + k])`, k = 0..11 — a sparse correlation with ±1 taps (the preamble template of `PhaseDecoder`).
+    *   `in` has no alignment requirement, but `in[p + 0..23]` must be readable for every position `p`; `out` must be 16-byte aligned. The sums are exact (32 bit).
+    *   PIE (`sum_pairs_pie.S`): unaligned 16-sample load, sign extension with `EE.VCMP.LT.S16` + `EE.VZIP.16`, `EE.VADDS.S32`/`EE.VSUBS.S32`. 31 pairs: 1031 cycles (C loop 6541).
+
 *   **`fir_16_16_q15(q15 *in, q15 *k, uint32_t ksize, q15 *out, uint32_t size)`**:
     *   Performs Finite Impulse Response (FIR) filtering on input data `in` using coefficients `k`.
     *   All vectors (`in`, `k`, `out`) must be 16-byte aligned. The number of coefficients `ksize` must be a multiple of 8 and >= 8. The output `size` must be a multiple of 8 and >= 8.

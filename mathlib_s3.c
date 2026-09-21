@@ -174,6 +174,17 @@ void fir_1_16(q15 *in, q15 *k, uint32_t ksize, q15 *out, uint32_t size)
         out[i] = dot_product_1_16(&in[i], k, ksize);
 }
 
+// Internal implementation function for sums of sample pairs (PIE)
+void sum_pairs_12_s16_pie(const int16_t *in, const uint16_t *pos, uint32_t pairs, int32_t *out);
+// Wrapper function for sums of sample pairs with assertions
+void sum_pairs_12_s16(const int16_t *in, const uint16_t *pos, uint32_t pairs, int32_t *out)
+{
+    // Ensure the output is 16-byte aligned (EE.VST.128 ignores the low address bits)
+    assert(((uint32_t)out % 16) == 0);
+
+    sum_pairs_12_s16_pie(in, pos, pairs, out);
+}
+
 // Internal implementation function for adding two vectors (PIE)
 void addVectors_q15_pie(q15 *in1, q15 *in2, q15 *out, uint32_t size);
 // Wrapper function for adding two vectors with saturation and assertions
