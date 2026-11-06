@@ -157,40 +157,42 @@ static void magnitude(complex_q15* in, q15* out, uint32_t size)
 
 TEST_CASE("magnitude_q15", "[math][mathlib_s3]")
 {
+   // Размер - TEST_SIZE: выходы in1 и out такой длины, in (FFT_SIZE+16) больше их - запись по countof(in)
+   // выходила за in1 и out и портила сам вход.
    uint32_t mem1=esp_get_free_heap_size();
 
    TRACE("Number of iterations",N,false);
-   TRACE("Input size",countof(in),false);
-   for(int16_t i=0; i < countof(in); i++)
+   TRACE("Input size",TEST_SIZE,false);
+   for(int16_t i=0; i < TEST_SIZE; i++)
    {
         in[i].re = INT16_MAX/(i+1);
         in[i].im = INT16_MAX/(i+1);
    }
-   in[countof(in)-1].re = INT16_MAX;
-   in[countof(in)-1].im = INT16_MAX;
+   in[TEST_SIZE-1].re = INT16_MAX;
+   in[TEST_SIZE-1].im = INT16_MAX;
    
    STARTTIMESHOT();
-   magnitude(in,in1,countof(in));
+   magnitude(in,in1,TEST_SIZE);
    STOPTIME("C++ version 1 time",1);
    STARTTIMESHOT();
    for(int i=0;i<N;i++)
    {
-      magnitude(in,in1,countof(in));
+      magnitude(in,in1,TEST_SIZE);
    }
    STOPTIME("C++ version time",N);
 
    STARTTIMESHOT();
-   magnitude_q15(in,out,countof(in));
+   magnitude_q15(in,out,TEST_SIZE);
    STOPTIME("magnitude_q15 1 time",1);
    for( auto& x : out) x=0;
    STARTTIMESHOT();
    for(int i=0;i<N;i++)
    {
-      magnitude_q15(in,out,countof(in));
+      magnitude_q15(in,out,TEST_SIZE);
    }
    STOPTIME("magnitude_q15 time",N);
 
-   TEST_ASSERT_EQUAL_INT16_ARRAY(out, in1, countof(in));
+   TEST_ASSERT_EQUAL_INT16_ARRAY(out, in1, TEST_SIZE);
 
    for( auto& x : out) x=0;
    magnitude_q15(in,out,8);
