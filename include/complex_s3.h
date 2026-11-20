@@ -63,6 +63,38 @@ extern "C"
         \param[out] out output vector (16 bytes aligned).
     */
     void cmul10_q15(complex_q15 *in, complex_q15 *k, complex_q15 *out);
+    /// Rotate a complex vector by a periodic twiddle table.
+    /*!
+        data[i] = data[i] * tw[(phase + i) % period]
+        The table is stored per phase: tw[p][j] is the twiddle of the phase (p + j) % period, so four
+        consecutive twiddles are always read with one 128-bit load even if period is not a multiple of 4.
+        \param[in,out] data vector (16 bytes aligned), modified in place.
+        \param[in] size vector size (multiple of 4).
+        \param[in] tw phase table (16 bytes aligned).
+        \param[in] period number of phases (>= 1).
+        \param[in] phase starting phase (0..period-1).
+    */
+    void rotate_q15(complex_q15 *data, uint32_t size, const complex_q15 (*tw)[4], uint32_t period, uint32_t phase);
+
+    /// Split an interleaved complex vector into real and imaginary parts.
+    /*!
+        re[i] = in[i].re, im[i] = in[i].im
+        \param[in] in complex vector (16 bytes aligned).
+        \param[out] re real part (16 bytes aligned).
+        \param[out] im imaginary part (16 bytes aligned).
+        \param[in] size vector size (multiple of 8).
+    */
+    void iq_unzip_q15(complex_q15 *in, q15 *re, q15 *im, uint32_t size);
+
+    /// Merge real and imaginary parts into an interleaved complex vector.
+    /*!
+        out[i].re = re[i], out[i].im = im[i]
+        \param[in] re real part (16 bytes aligned).
+        \param[in] im imaginary part (16 bytes aligned).
+        \param[out] out complex vector (16 bytes aligned).
+        \param[in] size vector size (multiple of 8).
+    */
+    void iq_zip_q15(q15 *re, q15 *im, complex_q15 *out, uint32_t size);
 
 #ifdef __cplusplus
 }

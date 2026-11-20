@@ -35,6 +35,55 @@ inline complex_q15 cmul_q15(complex_q15 x, complex_q15 y)
     return cmul_q15_pie(x, y);
 };
 
+// Internal implementation function for rotating a complex vector by a periodic twiddle table (PIE)
+void rotate_q15_pie(complex_q15 *data, uint32_t size, const complex_q15 (*tw)[4], uint32_t period, uint32_t phase);
+// Wrapper function for the periodic rotation with assertions
+inline void rotate_q15(complex_q15 *data, uint32_t size, const complex_q15 (*tw)[4], uint32_t period, uint32_t phase)
+{
+    // Ensure the data vector is 16-byte aligned
+    assert(((uint32_t)data % 16) == 0);
+    // Ensure the table is 16-byte aligned
+    assert(((uint32_t)tw % 16) == 0);
+    // Ensure size is a multiple of 4 and greater than 0
+    assert((size % 4) == 0);
+    assert(size > 0);
+    // Ensure the phase lies inside the table
+    assert(period > 0);
+    assert(phase < period);
+
+    rotate_q15_pie(data, size, tw, period, phase);
+}
+
+// Internal implementation functions for splitting/merging interleaved complex vectors (PIE)
+void iq_unzip_q15_pie(complex_q15 *in, q15 *re, q15 *im, uint32_t size);
+void iq_zip_q15_pie(q15 *re, q15 *im, complex_q15 *out, uint32_t size);
+// Wrapper function for the split with assertions
+inline void iq_unzip_q15(complex_q15 *in, q15 *re, q15 *im, uint32_t size)
+{
+    // Ensure all vectors are 16-byte aligned
+    assert(((uint32_t)in % 16) == 0);
+    assert(((uint32_t)re % 16) == 0);
+    assert(((uint32_t)im % 16) == 0);
+    // Ensure size is a multiple of 8 and greater than 0
+    assert((size % 8) == 0);
+    assert(size > 0);
+
+    iq_unzip_q15_pie(in, re, im, size);
+}
+// Wrapper function for the merge with assertions
+inline void iq_zip_q15(q15 *re, q15 *im, complex_q15 *out, uint32_t size)
+{
+    // Ensure all vectors are 16-byte aligned
+    assert(((uint32_t)re % 16) == 0);
+    assert(((uint32_t)im % 16) == 0);
+    assert(((uint32_t)out % 16) == 0);
+    // Ensure size is a multiple of 8 and greater than 0
+    assert((size % 8) == 0);
+    assert(size > 0);
+
+    iq_zip_q15_pie(re, im, out, size);
+}
+
 // Internal implementation function for multiplying a complex vector of size 10 by a scalar (PIE)
 void cmul10_q15_pie(complex_q15 *in, complex_q15 *k, complex_q15 *out);
 // Wrapper function for multiplying a complex vector of size 10 by a scalar with assertions

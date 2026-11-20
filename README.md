@@ -114,6 +114,29 @@ Library contains defines optimized functions for performing operations on fixed-
     *   The scalar `k` must be 2-byte aligned.
     *   Stores the results in the output vector (`out`).
 
+*   **`rotate_q15(complex_q15 *data, uint32_t size, const complex_q15 (*tw)[4], uint32_t period, uint32_t phase)`**:
+    *   Rotates a complex vector in place by a periodic twiddle table: `data[i] *= tw[(phase + i) % period]`.
+    *   Two `EE.CMUL.S16` per 4 complex samples (the instruction processes one 64-bit half of the operands
+        and keeps the other half of the destination). The table is stored per phase (`tw[p][j]` is the
+        twiddle of phase `(p + j) % period`), so a 128-bit load always yields four consecutive twiddles;
+        a period that is not a multiple of 4 (the modem rotates by -pi/3 per sample at 48 kHz, period 6)
+        is supported.
+    *   `data` and `tw` must be 16-byte aligned, `size` must be a multiple of 4, `phase` < `period`.
+    *   Replaces the per-sample `arg` + `sincos_q15` renormalization of the recursive rotator
+        (`CStreamTask::run`), measured on ESP32-S3 @240 MHz: 5 cycles per sample instead of 452
+        (40-sample block 200 instead of 18100 cycles, 48 kHz: 0.11 % CPU instead of 9.0 %);
+        the output differs from the CORDIC rotator by not more than 13 LSB of Q15.
+
+*   **`iq_unzip_q15(complex_q15 *in, q15 *re, q15 *im, uint32_t size)`**:
+    *   Splits an interleaved complex vector into real (`re`) and imaginary (`im`) parts with `EE.VUNZIP.16`,
+        handles 8 complex samples per iteration.
+    *   All vectors must be 16-byte aligned, `size` must be a multiple of 8.
+
+*   **`iq_zip_q15(q15 *re, q15 *im, complex_q15 *out, uint32_t size)`**:
+    *   Merges real and imaginary parts into an interleaved complex vector with `EE.VZIP.16`, 8 complex samples
+        per iteration.
+    *   All vectors must be 16-byte aligned, `size` must be a multiple of 8.
+
 ## Functions
 *   **`copy(q15 *in, q15 *out, uint32_t size)`**:
     *   Copies `size` elements from the input vector `in` to the output vector `out`.
