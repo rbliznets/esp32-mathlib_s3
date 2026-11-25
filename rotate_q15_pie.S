@@ -29,6 +29,9 @@ rotate_q15_pie:
     movi.n  a10, 64                 // 4 phases per iteration
 
     beqz    a3, .Lend_rotate_q15_pie
+    beqz    a5, .Lend_rotate_q15_pie
+    bltu    a10, a5, .Lloop_rotate_q15_pie
+    remu    a10, a10, a5            // (4 % period) rows; one subtraction now suffices below
 .Lloop_rotate_q15_pie:
     add.n   a7, a4, a6
     ee.vld.128.ip   q1, a7, 0       // twiddles of the phases phase..phase+3
